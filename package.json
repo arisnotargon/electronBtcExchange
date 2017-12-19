@@ -1,0 +1,23 @@
+{
+  "name": "btcexchange",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "electron": "^1.7.10"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arisnotargon/electronBtcExchange.git"
+  },
+  "author": "arisnotargon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arisnotargon/electronBtcExchange/issues"
+  },
+  "homepage": "https://github.com/arisnotargon/electronBtcExchange#readme"
+}
