@@ -5,17 +5,55 @@
     <title>看差价</title>
 </head>
 <body>
-<header>
-    <div class="option">_</div>
-    <div class="option">口</div>
-    <div class="option">X</div>
-</header>
-
-<div id="content">
-    content
+<div>
+    交易对:
+    <select id="symbol">
+        <option value="null" selected>交易对</option>
+        <option value="ethbtc">ethbtc</option>
+        <option value="eosbtc">eosbtc</option>
+        <option value="eoseth">eoseth</option>
+        <option value="iotbtc">iotbtc</option>
+        <option value="ioteth">ioteth</option>
+    </select>
 </div>
-
+<div id="content">
+    <div id="bian" style="background-color: mistyrose">
+        <table border="1px;">
+            <tr>
+                <td colspan="4">币安</td>
+            </tr>
+            <tr>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
+    </div>
+</div>
 <script src="public/js/jq.js"></script>
-<script>if (typeof module === 'object') {window.jQuery = window.$ = module.exports;}</script>
+<script>
+    if (typeof module === 'object') {
+        window.jQuery = window.$ = module.exports;
+    }
+</script>
+<script>
+    symbolMap = {
+        'ethbtc': {
+            'huobi': 'ethbtc',
+            'bian': 'ETHBTC'
+        }
+    };
+    symbol = $('#symbol');
+    symbol.on('change', function () {
+        bianAjax();
+        huobiAjax();
+    });
+
+
+
+</script>
 </body>
 </html>
