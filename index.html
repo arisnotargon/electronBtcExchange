@@ -2,12 +2,28 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>看差价</title>
+    <meta charset="UTF-8">
+    <title>看差价</title>
+    <style>
+        option {
+            font-size: larger;
+        }
+
+        select {
+            height: 30px;
+            width: 150px;
+            font-size: larger;
+        }
+
+        input {
+            font-size: larger;
+        }
+    </style>
 </head>
 
 <body>
-  <div>
+
+<div>
     交易对:
     <select id="symbol">
         <option value="null" selected>交易对</option>
@@ -19,108 +35,152 @@
         <option value="bchbtc">bchbtc</option>
         <option value="bcheth">bcheth</option>
     </select>
-    <input type="number" id="priceThreshold" name="" value="" placeholder="价格差阈值,只能填写0到1之间数字">
+    <input type="number" id="priceThreshold" name="" value="" placeholder="价格差阈值,只能填写0到1之间数字.默认0.01">
     <input type="number" id="depthThreshold" name="" value="" placeholder="深度阈值,0以上数字">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="button" value="刷新" onclick="refreshWindow()">
-  </div>
-  <div id="content">
+</div>
+<div id="content">
     <div id="bian" style="background-color: mistyrose;display:inline-block">
-      <table border="1px;">
-        <tr>
-          <td colspan="4">币安</td>
-        </tr>
-        <tr>
-        </tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-      </table>
+        <table border="1px;">
+            <tr>
+                <td colspan="4">币安</td>
+            </tr>
+            <tr>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
     </div>
     <div id="huobi" style="background-color: #6A6AFF;display:inline-block">
-      <table border="1px;">
-        <tr>
-          <td colspan="4">火币</td>
-        </tr>
-        <tr>
-        </tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-      </table>
+        <table border="1px;">
+            <tr>
+                <td colspan="4">火币</td>
+            </tr>
+            <tr>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
     </div>
     <div id="okex" style="background-color: #93FF93;display:inline-block">
-      <table border="1px;">
-        <tr>
-          <td colspan="4">OKEX</td>
-        </tr>
-        <tr>
-        </tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-        <tr></tr>
-      </table>
+        <table border="1px;">
+            <tr>
+                <td colspan="4">OKEX</td>
+            </tr>
+            <tr>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
     </div>
-  </div>
-  <script src="public/js/jq.js"></script>
-  <script type="text/javascript" src="public/js/app.js"></script>
-  <script>
+    <div id="cex" style="background-color: lightcyan;display:inline-block">
+        <table border="1px;">
+            <tr>
+                <td colspan="4">CEX</td>
+            </tr>
+            <tr>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
+    </div>
+</div>
+<div id="alert-content">
+
+</div>
+<script src="public/js/jq.js"></script>
+<script type="text/javascript" src="public/js/app.js"></script>
+<script>
     if (typeof module === 'object') {
-      window.jQuery = window.$ = module.exports;
+        window.jQuery = window.$ = module.exports;
     }
-  </script>
-  <script>
+</script>
+<script>
     function refreshWindow() {
-      window.location.reload();
+        window.location.reload();
     }
 
-    symbolMap = {
-      'ethbtc': {
-        'huobi': 'ethbtc',
-        'bian': 'ETHBTC',
-        'okex':'eth_btc',
-      },
-      'eosbtc': {
-        'huobi': 'eosbtc',
-        'bian': 'EOSBTC',
-        'okex':'eos_btc'
-      },
-      'iotbtc': {
-        'bian': 'IOTABTC',
-        'okex':'iota_btc'
-      },
-      'ioteos': {
-
-      },
-      'eoseth': {
-        'bian': 'EOSETH',
-        'huobi': 'eoseth',
-        'okex':'eos_eth'
-      },
-      'bchbtc': {
-        'huobi': 'bchbtc',
-        'bian': 'BCCBTC',
-        'okex':'bcc_btc'
-      },
-      'bcheth': {
-        'bian':'BCCETH'
-      }
-    };
-    symbol = $('#symbol');
-    symbol.on('change', function() {
-      okexAjax();
-      bianAjax();
-      huobiAjax();
+    priceThreshold = 0.01;//价差阈值,0至1
+    depthThreshold = 0;//深度阈值0以上
+    //价格阈值赋值
+    $('#priceThreshold').on('change', function () {
+        let tempPriceThreshold = $('#priceThreshold').val();
+        if (tempPriceThreshold > 0 && tempPriceThreshold < 1) {
+            priceThreshold = tempPriceThreshold;
+        } else {
+            priceThreshold = 0.01;
+        }
     });
-  </script>
-</body>
+    //深度阈值赋值
+    $('#depthThreshold').on('change', function () {
+        let tempDepthThreshold = $('#depthThreshold').val();
+        if (tempDepthThreshold > 0) {
+            depthThreshold = tempDepthThreshold;
+        } else {
+            depthThreshold = 0;
+        }
+    });
+    //交易对-交易所映射
+    symbolMap = {
+        'ethbtc': {
+            'huobi': 'ethbtc',
+            'bian': 'ETHBTC',
+            'okex': 'eth_btc',
+            'cex': 'eth_btc'
+        },
+        'eosbtc': {
+            'huobi': 'eosbtc',
+            'bian': 'EOSBTC',
+            'okex': 'eos_btc',
+            'cex': 'eos_btc'
+        },
+        'iotbtc': {
+            'bian': 'IOTABTC',
+            'okex': 'iota_btc'
+        },
+        'ioteos': {},
+        'eoseth': {
+            'bian': 'EOSETH',
+            'huobi': 'eoseth',
+            'okex': 'eos_eth',
+            'cex': 'eos_eth'
+        },
+        'bchbtc': {
+            'huobi': 'bchbtc',
+            'bian': 'BCCBTC',
+            'okex': 'bcc_btc'
+        },
+        'bcheth': {
+            'bian': 'BCCETH'
+        }
+    };
+    //比价列表
+    checkLsit = {};
 
+    symbol = $('#symbol');
+    symbol.on('change', function () {
+        cexAjax();
+        okexAjax();
+        bianAjax();
+        huobiAjax();
+    });
+</script>
+</body>
 </html>
