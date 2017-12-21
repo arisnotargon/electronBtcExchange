@@ -1,18 +1,37 @@
 {
   "name": "btcexchange",
   "version": "1.0.0",
-  "description": "",
+  "description": "watch price of symbols from many exchange",
   "main": "index.js",
   "dependencies": {
-    "electron": "^1.7.10"
+    "electron": "^1.7.10",
+    "electron-builder": "^19.49.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron-packager": "^10.1.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "packager": "electron-packager . btcExchange --all --out ./OutApp --version 0.0.1 --overwrite --icon=./public/img/icon.ico"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arisnotargon/electronBtcExchange.git"
+  },
+  "build": {
+    "appId": "github.com/arisnotargon",
+    "mac": {
+      "category": "arisnotargon.btcexchange"
+    },
+    "copyright": "Open Totally",
+    "compression": "normal",
+    "nsis": {
+      "oneClick": true,
+      "perMachine": true,
+      "runAfterFinish": true
+    }
   },
   "author": "arisnotargon",
   "license": "MIT",
