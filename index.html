@@ -38,6 +38,9 @@
     <input type="number" id="priceThreshold" name="" value="" placeholder="价格差阈值,只能填写0到1之间数字.默认0.01">
     <input type="number" id="depthThreshold" name="" value="" placeholder="深度阈值,0以上数字">
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="button" value="记录模式" onclick="priceLog();">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="button" value="刷新" onclick="refreshWindow()">
 </div>
 <div id="content">
@@ -137,50 +140,88 @@
             depthThreshold = 0;
         }
     });
-    //交易对-交易所映射
-    symbolMap = {
-        'ethbtc': {
-            'huobi': 'ethbtc',
-            'bian': 'ETHBTC',
-            'okex': 'eth_btc',
-            'cex': 'eth_btc'
-        },
-        'eosbtc': {
-            'huobi': 'eosbtc',
-            'bian': 'EOSBTC',
-            'okex': 'eos_btc',
-            'cex': 'eos_btc'
-        },
-        'iotbtc': {
-            'bian': 'IOTABTC',
-            'okex': 'iota_btc'
-        },
-        'ioteos': {},
-        'eoseth': {
-            'bian': 'EOSETH',
-            'huobi': 'eoseth',
-            'okex': 'eos_eth',
-            'cex': 'eos_eth'
-        },
-        'bchbtc': {
-            'huobi': 'bchbtc',
-            'bian': 'BCCBTC',
-            'okex': 'bcc_btc'
-        },
-        'bcheth': {
-            'bian': 'BCCETH'
-        }
-    };
-    //比价列表
-    checkLsit = {};
 
     symbol = $('#symbol');
     symbol.on('change', function () {
-        cexAjax();
-        okexAjax();
-        bianAjax();
-        huobiAjax();
+        okexWs();
+//        cexWs();
+//        cexAjax();
+//        okexAjax();
+//        bianAjax();
+//        huobiAjax();
     });
+
+    function cexWs() {
+        let url = 'wss://api.bitfinex.com/ws/2';
+        let cexWs = new WebSocket(url);
+
+        cexWs.onopen = function (event) {
+            cexWs.send(JSON.stringify({
+                chanId: 19956,
+                event: "unsubscribe"
+            }));
+
+            console.log(1111);
+        };
+
+        cexWs.onerror = function (event) {
+
+        };
+
+        cexWs.onmessage = function (event) {
+            cexWs.send(JSON.stringify({
+                channel: "book",
+                event: "subscribe",
+                freq: "F0",
+                len:25,
+                prec: "P0",
+                symbol: "tETHBTC"
+            }));
+            console.log(event.data);
+        };
+
+        cexWs.onclose = function (event) {
+            console.log('closed');
+        };
+    }
+
+    function okexWs() {
+        let url = 'wss://real.okex.com:10441/websocket';
+        let okexWebSocket = new WebSocket(url);
+        let channel = 'ok_sub_spot_eth_btc_depth';
+
+        okexWebSocket.onopen = function (envent) {
+//            okexWebSocket.send('{\'event\':\'addChannel\',\'channel\':\''+channel+'\'}');
+            setInterval(function () {
+                okexWebSocket.send('{\'event\':\'ping\'}');
+            },300);
+        };
+
+        okexWebSocket.onmessage = function (event) {
+            let redata = JSON.parse(event.data);
+
+            if(typeof redata[0] !== 'undefined'){
+                redata = redata[0];
+                if(redata.channel === channel){
+
+                }else {
+                    console.log(redata);
+                }
+            }
+
+
+
+            console.log(redata.channel=== channel);
+        };
+
+        okexWebSocket.onerror = function (event) {
+            console.log('error')
+        };
+
+        okexWebSocket.onclose = function (event) {
+            console.log('closed');
+        };
+    }
 </script>
 </body>
 </html>

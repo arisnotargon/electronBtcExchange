@@ -17,6 +17,8 @@ function createMainWidow() {
         slashes: true,
         webPreferences: {webSecurity: false},
     }));
+
+    //启动时打开调试工具,发布时应该注释
     mainWindow.webContents.openDevTools();
 }
 

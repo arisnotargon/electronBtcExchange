@@ -1,3 +1,52 @@
+//定义ui比价容器
+checkLsit = {};
+
+//定义后台比价容器
+logDataCheckObj = {};
+
+//交易对-交易所映射
+symbolMap = {
+    'ethbtc': {
+        'huobi': 'ethbtc',
+        'bian': 'ETHBTC',
+        'okex': 'eth_btc',
+        'cex': 'eth_btc'
+    },
+    'eosbtc': {
+        'huobi': 'eosbtc',
+        'bian': 'EOSBTC',
+        'okex': 'eos_btc',
+        'cex': 'eos_btc'
+    },
+    'iotbtc': {
+        'bian': 'IOTABTC',
+        'okex': 'iota_btc'
+    },
+    'ioteos': {},
+    'eoseth': {
+        'bian': 'EOSETH',
+        'huobi': 'eoseth',
+        'okex': 'eos_eth',
+        'cex': 'eos_eth'
+    },
+    'bchbtc': {
+        'huobi': 'bchbtc',
+        'bian': 'BCCBTC',
+        'okex': 'bcc_btc'
+    },
+    'bcheth': {
+        'bian': 'BCCETH'
+    }
+};
+
+//交易所和请求url的映射
+exchangeUrlMap = {
+    'bian': 'https://api.binance.com/api/v1/depth?limit=5&symbol=',
+    'huobi': 'https://api.huobi.pro/market/depth?type=step1&symbol=',
+    'okex': 'https://www.okex.com/api/v1/depth.do?symbol=',
+    'cex': 'http://api.cex.com/api/v1/depth.do?symbol=',
+};
+
 function bianAjax() {
     /**
      币安api:content-type:application/json,不用转json
@@ -167,4 +216,141 @@ function checkPrice() {
         })
     }
     $('#alert-content').html(alertString);
+}
+
+/**
+ * 异步递归获取数据对象
+ * 定时器操作,每秒比价一次,达到价差阈值请求入库
+ * symbolKey是交易对名常量,symbol是交易对请求参数,这里没用到
+ */
+function priceLog() {
+    $.each(symbolMap, function (symbolKey, exchangeSymbol) {
+        $.each(exchangeSymbol, function (exchange, symbol) {
+            switch (exchange) {
+                case 'huobi':
+                    huobiLogDataBuilder(symbolKey);
+                    break;
+                case 'bian':
+                    bianLogDataBuilder(symbolKey);
+                    break;
+                case 'cex':
+                    cexLogDataBuilder(symbolKey);
+                    break;
+                case 'okex':
+                    okexLogDataBuilder(symbolKey);
+                    break;
+            }
+        });
+    });
+    setInterval(function () {
+        $.each(logDataCheckObj, function (symbol, info) {
+            $.each(info, function (outExchange, outPrice) {
+                $.each(info, function (innerExchange, innerPrice) {
+                    if (
+                        outExchange !== innerExchange
+                        && typeof outPrice.buyPrice !== 'undefined'
+                        && typeof innerPrice.sellPrice !== 'undefined'
+                        && (outPrice.buyPrice - innerPrice.sellPrice)/innerPrice.sellPrice >= 0.01
+                    ) {
+                        //post请求记录接口
+
+                    }
+                })
+            });
+
+        })
+    }, 1000);
+}
+
+/**
+ 输入交易所和币种返回请求url
+ */
+function getExchangeQueryUrl(exchange, symbol) {
+    let reUrl = null;
+    if (typeof symbolMap[symbol] !== 'undefined' && typeof symbolMap[symbol][exchange] !== 'undefined' && typeof exchangeUrlMap[exchange] !== 'undefined') {
+        reUrl = exchangeUrlMap[exchange] + symbolMap[symbol][exchange];
+    }
+
+    return reUrl;
+}
+
+function bianLogDataBuilder(symbol) {
+    let url = getExchangeQueryUrl('bian', symbol);
+    $.get(url, function (data) {
+        if (typeof data.bids !== 'undefined') {
+            if (typeof logDataCheckObj[symbol] === 'undefined') {
+                logDataCheckObj[symbol] = {};
+            }
+            logDataCheckObj[symbol].bian = {
+                'buyPrice': data.bids[0][0],
+                'buyDepth': data.bids[0][1],
+                'sellPrice': data.asks[0][0],
+                'sellDepth': data.asks[0][1],
+                'time': (new Date()).toLocaleTimeString()
+            }
+        }
+        bianLogDataBuilder(symbol);
+    });
+}
+
+function huobiLogDataBuilder(symbol) {
+    let url = getExchangeQueryUrl('huobi', symbol);
+    $.get(url, function (data) {
+        data = JSON.parse(data);
+        if (typeof data.tick !== 'undefined') {
+            if (typeof logDataCheckObj[symbol] === 'undefined') {
+                logDataCheckObj[symbol] = {};
+            }
+            logDataCheckObj[symbol].huobi = {
+                'buyPrice': data.tick.bids[0][0],
+                'buyDepth': data.tick.bids[0][1],
+                'sellPrice': data.tick.asks[0][0],
+                'sellDepth': data.tick.asks[0][1],
+                'time': (new Date()).toLocaleTimeString()
+            };
+        }
+        huobiLogDataBuilder(symbol);
+    });
+}
+
+function cexLogDataBuilder(symbol) {
+    let url = getExchangeQueryUrl('cex', symbol);
+    $.get(url, function (data) {
+        data = JSON.parse(data);
+        if (typeof data.bids !== 'undefined') {
+            if (typeof logDataCheckObj[symbol] === 'undefined') {
+                logDataCheckObj[symbol] = {};
+            }
+            let asksArr = eval('[' + data.asks + ']');
+            let bidsArr = eval('[' + data.bids + ']');
+            logDataCheckObj[symbol].cex = {
+                'buyPrice': bidsArr[0][0],
+                'buyDepth': bidsArr[0][1],
+                'sellPrice': asksArr[0][0],
+                'sellDepth': asksArr[0][1],
+                'time': (new Date()).toLocaleTimeString()
+            };
+        }
+        cexLogDataBuilder(symbol);
+    });
+}
+
+function okexLogDataBuilder(symbol) {
+    let url = getExchangeQueryUrl('okex', symbol);
+    $.get(url, function (data) {
+        data = JSON.parse(data);
+        if (typeof data.asks !== 'undefined') {
+            if (typeof logDataCheckObj[symbol] === 'undefined') {
+                logDataCheckObj[symbol] = {};
+            }
+            logDataCheckObj[symbol].okex = {
+                'buyPrice': data.bids[0][0],
+                'buyDepth': data.bids[0][1],
+                'sellPrice': data.asks[data.asks.length - 1][0],
+                'sellDepth': data.asks[data.asks.length - 1][1],
+                'time': (new Date()).toLocaleTimeString()
+            };
+        }
+        okexLogDataBuilder(symbol)
+    });
 }
